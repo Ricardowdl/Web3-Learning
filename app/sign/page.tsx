@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileSignature, CheckCircle, AlertCircle, Copy, RefreshCw } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
-import { SignatureService } from '@/services/signature';
+import { createSignatureService } from '@/services/signature';
 import { ethers } from 'ethers';
 
 const SignPage: React.FC = () => {
@@ -15,7 +15,7 @@ const SignPage: React.FC = () => {
   const [verificationResult, setVerificationResult] = useState<{ isValid: boolean; signer: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const signatureService = walletInfo ? new SignatureService(new ethers.BrowserProvider(window.ethereum)) : null;
+  const signatureService = walletInfo ? createSignatureService(new ethers.BrowserProvider(window.ethereum)) : null;
 
   useEffect(() => {
     // 生成默认消息

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Send, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
-import { TransactionService } from '@/services/transaction';
+import { createTransactionService } from '@/services/transaction';
 import { ethers } from 'ethers';
 
 const TransferPage: React.FC = () => {
@@ -17,7 +17,7 @@ const TransferPage: React.FC = () => {
   const [estimatedGas, setEstimatedGas] = useState<string>('0');
   const [gasPrice, setGasPrice] = useState<string>('0');
 
-  const transactionService = walletInfo ? new TransactionService(new ethers.BrowserProvider(window.ethereum)) : null;
+  const transactionService = walletInfo ? createTransactionService(new ethers.BrowserProvider(window.ethereum)) : null;
 
   useEffect(() => {
     if (walletInfo && transactionService) {
