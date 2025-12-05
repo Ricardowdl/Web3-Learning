@@ -1,6 +1,8 @@
 'use client'
 
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
+import { lsStorage } from '@/lib/idbStorage'
 import { ethers } from 'ethers'
 import type { WalletInfo, ConnectState, TokenInfo } from '@/types/web3'
 
@@ -31,7 +33,7 @@ const COMMON_TOKENS = [
   { symbol: 'WBTC', name: 'Wrapped BTC', address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', decimals: 8 },
 ]
 
-export const useWeb3Store = create<Web3State>((set, get) => ({
+export const useWeb3Store = create<Web3State>()(persist((set, get) => ({
   walletInfo: null,
   connectState: { isConnected: false, isConnecting: false, error: null },
   tokens: [],
@@ -92,7 +94,7 @@ export const useWeb3Store = create<Web3State>((set, get) => ({
       try {
         window.ethereum.removeAllListeners('accountsChanged')
         window.ethereum.removeAllListeners('chainChanged')
-      } catch {}
+      } catch { }
     }
     set({ walletInfo: null, tokens: [], provider: null, connectState: { isConnected: false, isConnecting: false, error: null } })
   },
@@ -115,7 +117,7 @@ export const useWeb3Store = create<Web3State>((set, get) => ({
                 nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
               }],
             })
-          } catch {}
+          } catch { }
         }
       }
     }
@@ -131,7 +133,7 @@ export const useWeb3Store = create<Web3State>((set, get) => ({
       const chainId = Number(network.chainId)
       const networkName = SUPPORTED_NETWORKS[chainId]?.name || `Chain ${chainId}`
       set({ walletInfo: { address, balance: ethers.formatEther(balance), chainId, network: networkName } })
-    } catch (e) {}
+    } catch (e) { }
   },
 
   refreshTokens: async () => {
@@ -152,5 +154,12 @@ export const useWeb3Store = create<Web3State>((set, get) => ({
       set({ tokens: [] })
     }
   },
+}), {
+  name: 'web3-store',
+  version: 1,
+  partialize: (state) => ({ walletInfo: state.walletInfo, connectState: state.connectState, tokens: state.tokens }),
+  storage: createJSONStorage(() => lsStorage),
+  onRehydrateStorage: () => {
+    return () => { }
+  },
 }))
-

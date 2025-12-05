@@ -6,11 +6,11 @@ export default function Home() {
     <div className="min-h-screen gradient-bg py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 页面标题 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-12 text-white">
+          <h1 className="text-4xl font-bold mb-4">
             欢迎来到 Web3 DApp
           </h1>
-          <p className="text-xl text-gray-900 max-w-2xl mx-auto">
+          <p className="text-xl max-w-2xl mx-auto">
             体验去中心化金融的魅力，连接你的MetaMask钱包开始探索区块链世界
           </p>
         </div>
