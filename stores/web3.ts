@@ -158,8 +158,7 @@ export const useWeb3Store = create<Web3State>()(persist((set, get) => ({
   name: 'web3-store',
   version: 1,
   partialize: (state) => ({ walletInfo: state.walletInfo, connectState: state.connectState, tokens: state.tokens }),
-  storage: createJSONStorage(() => lsStorage),
-  onRehydrateStorage: () => {
-    return () => { }
-  },
+  // storage: createJSONStorage(() => lsStorage),
+  storage: createJSONStorage(() => localStorage),
+
 }))
