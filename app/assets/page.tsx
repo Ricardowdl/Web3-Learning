@@ -8,11 +8,10 @@ const AssetsPage: React.FC = () => {
   const { walletInfo, tokens, refreshBalance, refreshTokens } = useWeb3();
 
   useEffect(() => {
-    if (walletInfo) {
-      refreshBalance();
+    if (walletInfo?.address) {
       refreshTokens();
     }
-  }, [walletInfo]);
+  }, [walletInfo?.address, walletInfo?.chainId]);
 
   const formatBalance = (balance: string, decimals: number = 4) => {
     const num = parseFloat(balance);
