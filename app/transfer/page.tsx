@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Send, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
-import { createTransactionService } from '@/services/transaction';
+import { sendTransaction as sendTransactionFn, estimateGas as estimateGasFn, getGasPrice as getGasPriceFn, isValidAddress as isValidAddressFn, isValidAmount as isValidAmountFn } from '@/services/transaction';
 import { ethers } from 'ethers';
 
 const TransferPage: React.FC = () => {
@@ -17,21 +17,21 @@ const TransferPage: React.FC = () => {
   const [estimatedGas, setEstimatedGas] = useState<string>('0');
   const [gasPrice, setGasPrice] = useState<string>('0');
 
-  const transactionService = walletInfo ? createTransactionService(new ethers.BrowserProvider(window.ethereum)) : null;
+  const provider = walletInfo ? new ethers.BrowserProvider(window.ethereum) : null;
 
   useEffect(() => {
-    if (walletInfo && transactionService) {
+    if (walletInfo && provider) {
       loadGasInfo();
     }
   }, [walletInfo]);
 
   const loadGasInfo = async () => {
-    if (!transactionService) return;
+    if (!provider) return;
 
     try {
       const [gasPriceData, estimatedGasData] = await Promise.all([
-        transactionService.getGasPrice(),
-        toAddress && amount ? transactionService.estimateGas(toAddress, amount) : '21000'
+        provider ? getGasPriceFn(provider) : '0',
+        provider && toAddress && amount ? estimateGasFn(provider, toAddress, amount) : '21000'
       ]);
       setGasPrice(gasPriceData);
       setEstimatedGas(estimatedGasData);
@@ -41,23 +41,23 @@ const TransferPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (toAddress && amount && transactionService) {
+    if (toAddress && amount && provider) {
       loadGasInfo();
     }
   }, [toAddress, amount]);
 
   const validateForm = (): boolean => {
-    if (!transactionService) {
+    if (!provider) {
       setError('请先连接钱包');
       return false;
     }
 
-    if (!transactionService.isValidAddress(toAddress)) {
+    if (!isValidAddressFn(toAddress)) {
       setError('请输入有效的以太坊地址');
       return false;
     }
 
-    if (!transactionService.isValidAmount(amount)) {
+    if (!isValidAmountFn(amount)) {
       setError('请输入有效的转账金额');
       return false;
     }
@@ -79,12 +79,12 @@ const TransferPage: React.FC = () => {
     setSuccess(null);
     setTransactionHash(null);
 
-    if (!validateForm() || !transactionService) return;
+    if (!validateForm() || !provider) return;
 
     setIsLoading(true);
 
     try {
-      const result = await transactionService.sendTransaction(toAddress, amount);
+      const result = await sendTransactionFn(provider, toAddress, amount);
       setSuccess('转账成功！');
       setTransactionHash(result.hash);
       setToAddress('');

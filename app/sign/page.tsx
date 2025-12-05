@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileSignature, CheckCircle, AlertCircle, Copy, RefreshCw } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
-import { createSignatureService } from '@/services/signature';
+import { signMessage as signMessageFn, verifyMessage as verifyMessageFn, generateRandomMessage as generateRandomMessageFn } from '@/services/signature';
 import { ethers } from 'ethers';
 
 const SignPage: React.FC = () => {
@@ -15,18 +15,17 @@ const SignPage: React.FC = () => {
   const [verificationResult, setVerificationResult] = useState<{ isValid: boolean; signer: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const signatureService = walletInfo ? createSignatureService(new ethers.BrowserProvider(window.ethereum)) : null;
+  const provider = walletInfo ? new ethers.BrowserProvider(window.ethereum) : null;
 
   useEffect(() => {
-    // 生成默认消息
-    if (walletInfo && signatureService) {
-      const defaultMessage = signatureService.generateRandomMessage();
+    if (walletInfo) {
+      const defaultMessage = generateRandomMessageFn();
       setMessage(defaultMessage);
     }
   }, [walletInfo]);
 
   const handleSignMessage = async () => {
-    if (!signatureService || !message.trim()) {
+    if (!provider || !message.trim()) {
       setError('请输入要签名的消息');
       return;
     }
@@ -37,7 +36,7 @@ const SignPage: React.FC = () => {
     setVerificationResult(null);
 
     try {
-      const result = await signatureService.signMessage(message);
+      const result = await signMessageFn(provider!, message);
       setSignature(result.signature);
     } catch (error) {
       setError(error instanceof Error ? error.message : '签名失败');
@@ -47,7 +46,7 @@ const SignPage: React.FC = () => {
   };
 
   const handleVerifySignature = async () => {
-    if (!signatureService || !message.trim() || !signature.trim()) {
+    if (!message.trim() || !signature.trim()) {
       setError('请提供消息和签名进行验证');
       return;
     }
@@ -56,7 +55,7 @@ const SignPage: React.FC = () => {
     setError(null);
 
     try {
-      const result = await signatureService.verifyMessage(message, signature);
+      const result = await verifyMessageFn(message, signature);
       setVerificationResult(result);
     } catch (error) {
       setError('验证失败');
@@ -66,8 +65,8 @@ const SignPage: React.FC = () => {
   };
 
   const handleGenerateRandomMessage = () => {
-    if (signatureService) {
-      const randomMessage = signatureService.generateRandomMessage();
+    if (provider) {
+      const randomMessage = generateRandomMessageFn();
       setMessage(randomMessage);
       setSignature('');
       setVerificationResult(null);
